@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const documentRoutes = require('./routes/document.routes');
 const chatRoutes = require('./routes/chat.routes');
-const errorHandler = require('./middleware/error.middleware');
+const { errorHandler, notFoundHandler } = require('./middleware/error.middleware');
 const { setupSwagger } = require('./swagger');
 
 const app = express();
@@ -26,7 +26,10 @@ app.get('/api/health', (req, res) => {
 app.use('/api/documents', documentRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Error handling middleware
+// 404 Route Not Found
+app.use(notFoundHandler);
+
+// Centralized error handling middleware
 app.use(errorHandler);
 
 module.exports = app;
