@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const documentRoutes = require('./routes/document.routes');
+const chatRoutes = require('./routes/chat.routes');
 const errorHandler = require('./middleware/error.middleware');
 
 const app = express();
@@ -19,6 +20,7 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/documents', documentRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
