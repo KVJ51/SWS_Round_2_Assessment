@@ -31,8 +31,6 @@ Thumbs.db
 *.swp
 *.swo
 
-# Uploads and temporary files
-server/uploads/
-
-Task.md
-
+# Uploads directory contents (preserve directory with .gitkeep)
+server/uploads/*
+!server/uploads/.gitkeep
