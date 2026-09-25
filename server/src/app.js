@@ -3,6 +3,7 @@ const cors = require('cors');
 const documentRoutes = require('./routes/document.routes');
 const chatRoutes = require('./routes/chat.routes');
 const errorHandler = require('./middleware/error.middleware');
+const { setupSwagger } = require('./swagger');
 
 const app = express();
 
@@ -10,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Swagger Documentation UI
+setupSwagger(app);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

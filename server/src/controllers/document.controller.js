@@ -81,6 +81,39 @@ const getDocuments = async (req, res, next) => {
 };
 
 /**
+ * Controller to get a single document by ID
+ * GET /api/documents/:id
+ */
+const getDocumentById = async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: 'Invalid document ID.'
+    });
+  }
+
+  try {
+    const document = await Document.findById(id).select('_id originalName mimeType size createdAt');
+
+    if (!document) {
+      return res.status(404).json({
+        message: 'Document not found.'
+      });
+    }
+
+    return res.status(200).json({
+      document
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Failed to retrieve document',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Controller to download a document
  * GET /api/documents/:id/download
  */
@@ -170,6 +203,7 @@ const deleteDocument = async (req, res, next) => {
 module.exports = {
   uploadDocument,
   getDocuments,
+  getDocumentById,
   downloadDocument,
   deleteDocument
 };
