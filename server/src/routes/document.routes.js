@@ -4,7 +4,8 @@ const uploadMiddleware = require('../middleware/upload.middleware');
 const {
   uploadDocument,
   getDocuments,
-  downloadDocument
+  downloadDocument,
+  deleteDocument
 } = require('../controllers/document.controller');
 
 // POST /api/documents - Upload a document (.txt, .md, .json)
@@ -15,5 +16,8 @@ router.get('/', getDocuments);
 
 // GET /api/documents/:id/download - Download a document
 router.get('/:id/download', downloadDocument);
+
+// DELETE /api/documents/:id - Delete a document and its file
+router.delete('/:id', deleteDocument);
 
 module.exports = router;

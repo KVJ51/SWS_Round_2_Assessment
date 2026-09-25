@@ -127,8 +127,49 @@ const downloadDocument = async (req, res, next) => {
   }
 };
 
+/**
+ * Controller to delete a document
+ * DELETE /api/documents/:id
+ */
+const deleteDocument = async (req, res, next) => {
+  const { id } = req.params;
+
+  // Validate MongoDB ID format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: 'Invalid document ID.'
+    });
+  }
+
+  try {
+    const document = await Document.findById(id);
+
+    if (!document) {
+      return res.status(404).json({
+        message: 'Document not found.'
+      });
+    }
+
+    // Delete associated physical file from disk (handles missing file safely)
+    await deleteFile(document.path);
+
+    // Delete MongoDB document metadata
+    await Document.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      message: 'Document and associated file deleted successfully.'
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Failed to delete document',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocuments,
-  downloadDocument
+  downloadDocument,
+  deleteDocument
 };
