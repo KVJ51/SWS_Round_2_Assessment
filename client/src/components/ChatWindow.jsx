@@ -8,8 +8,20 @@ const EXAMPLE_QUESTIONS = [
   'What are the main guidelines mentioned in the documents?'
 ];
 
+const CHAT_HISTORY_STORAGE_KEY = 'documind_chat_history';
+
 function ChatWindow() {
-  const [messages, setMessages] = useState([]);
+  // Load initial chat history from localStorage
+  const [messages, setMessages] = useState(() => {
+    try {
+      const savedHistory = localStorage.getItem(CHAT_HISTORY_STORAGE_KEY);
+      return savedHistory ? JSON.parse(savedHistory) : [];
+    } catch (err) {
+      console.error('Failed to load chat history from localStorage:', err);
+      return [];
+    }
+  });
+
   const [inputQuestion, setInputQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatError, setChatError] = useState('');
@@ -20,9 +32,19 @@ function ChatWindow() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Scroll to bottom when messages or loading state change
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  // Persist chat history to localStorage whenever messages change
+  useEffect(() => {
+    try {
+      localStorage.setItem(CHAT_HISTORY_STORAGE_KEY, JSON.stringify(messages));
+    } catch (err) {
+      console.error('Failed to save chat history to localStorage:', err);
+    }
+  }, [messages]);
 
   const handleSendMessage = async (textToSend) => {
     const questionText = (textToSend || inputQuestion).trim();
@@ -82,8 +104,15 @@ function ChatWindow() {
   };
 
   const handleClearChat = () => {
-    setMessages([]);
-    setChatError('');
+    if (window.confirm('Are you sure you want to clear your conversation history?')) {
+      setMessages([]);
+      setChatError('');
+      try {
+        localStorage.removeItem(CHAT_HISTORY_STORAGE_KEY);
+      } catch (err) {
+        console.error('Failed to clear chat history from localStorage:', err);
+      }
+    }
   };
 
   return (
