@@ -1,5 +1,8 @@
+const mongoose = require('mongoose');
 const { retrieveRelevantDocuments } = require('../services/retrieval.service');
 const { generateAnswer } = require('../services/ai.service');
+
+const isDbConnected = () => mongoose.connection.readyState === 1;
 
 /**
  * Controller to handle AI question answering
@@ -16,6 +19,12 @@ const askQuestion = async (req, res, next) => {
   }
 
   try {
+    if (!isDbConnected()) {
+      return res.status(503).json({
+        message: 'Database is currently not connected. Please ensure MongoDB is running.'
+      });
+    }
+
     const trimmedQuestion = question.trim();
 
     // 2. Retrieve top 3 relevant documents
@@ -45,8 +54,7 @@ const askQuestion = async (req, res, next) => {
     });
   } catch (error) {
     return res.status(500).json({
-      message: 'Failed to generate answer',
-      error: error.message
+      message: error.message || 'Failed to generate answer'
     });
   }
 };

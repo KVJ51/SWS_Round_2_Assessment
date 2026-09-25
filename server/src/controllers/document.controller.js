@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const Document = require('../models/Document');
 const { extractTextFromFile, deleteFile } = require('../services/file.service');
 
+const isDbConnected = () => mongoose.connection.readyState === 1;
+
 /**
  * Controller to handle document upload
  * POST /api/documents
@@ -19,6 +21,13 @@ const uploadDocument = async (req, res, next) => {
   const ext = path.extname(originalname).toLowerCase();
 
   try {
+    if (!isDbConnected()) {
+      await deleteFile(filePath);
+      return res.status(503).json({
+        message: 'Database is currently not connected. Please ensure MongoDB is running.'
+      });
+    }
+
     // Extract and validate content
     const extractedText = await extractTextFromFile(filePath, ext);
 
@@ -53,8 +62,7 @@ const uploadDocument = async (req, res, next) => {
     }
 
     return res.status(500).json({
-      message: 'An error occurred while processing the document',
-      error: error.message
+      message: error.message || 'An error occurred while processing the document'
     });
   }
 };
@@ -65,6 +73,12 @@ const uploadDocument = async (req, res, next) => {
  */
 const getDocuments = async (req, res, next) => {
   try {
+    if (!isDbConnected()) {
+      return res.status(503).json({
+        message: 'Database is currently not connected. Please ensure MongoDB is running.'
+      });
+    }
+
     const documents = await Document.find({})
       .select('_id originalName mimeType size createdAt')
       .sort({ createdAt: -1 });
@@ -74,8 +88,7 @@ const getDocuments = async (req, res, next) => {
     });
   } catch (error) {
     return res.status(500).json({
-      message: 'Failed to retrieve documents',
-      error: error.message
+      message: error.message || 'Failed to retrieve documents'
     });
   }
 };
@@ -94,6 +107,12 @@ const getDocumentById = async (req, res, next) => {
   }
 
   try {
+    if (!isDbConnected()) {
+      return res.status(503).json({
+        message: 'Database is currently not connected. Please ensure MongoDB is running.'
+      });
+    }
+
     const document = await Document.findById(id).select('_id originalName mimeType size createdAt');
 
     if (!document) {
@@ -107,8 +126,7 @@ const getDocumentById = async (req, res, next) => {
     });
   } catch (error) {
     return res.status(500).json({
-      message: 'Failed to retrieve document',
-      error: error.message
+      message: error.message || 'Failed to retrieve document'
     });
   }
 };
@@ -128,6 +146,12 @@ const downloadDocument = async (req, res, next) => {
   }
 
   try {
+    if (!isDbConnected()) {
+      return res.status(503).json({
+        message: 'Database is currently not connected. Please ensure MongoDB is running.'
+      });
+    }
+
     const document = await Document.findById(id);
 
     if (!document) {
@@ -154,8 +178,7 @@ const downloadDocument = async (req, res, next) => {
     });
   } catch (error) {
     return res.status(500).json({
-      message: 'Failed to process download request',
-      error: error.message
+      message: error.message || 'Failed to process download request'
     });
   }
 };
@@ -175,6 +198,12 @@ const deleteDocument = async (req, res, next) => {
   }
 
   try {
+    if (!isDbConnected()) {
+      return res.status(503).json({
+        message: 'Database is currently not connected. Please ensure MongoDB is running.'
+      });
+    }
+
     const document = await Document.findById(id);
 
     if (!document) {
@@ -194,8 +223,7 @@ const deleteDocument = async (req, res, next) => {
     });
   } catch (error) {
     return res.status(500).json({
-      message: 'Failed to delete document',
-      error: error.message
+      message: error.message || 'Failed to delete document'
     });
   }
 };
